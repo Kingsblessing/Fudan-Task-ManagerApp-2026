@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Claude ###
+/README_AI.md
+/CLAUDE.md
+/TaskManager.md
+
+### start.bat ###
+/start_MySQL.bat
