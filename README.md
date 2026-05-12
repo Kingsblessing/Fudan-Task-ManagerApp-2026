@@ -194,7 +194,7 @@ X-User-Id: 1
 X-User-Role: LEADER
 ```
 
-Body:（raw-JSON)
+Body:(raw-JSON)
 
 ```JSON
 {
@@ -239,7 +239,7 @@ X-User-Id: 2
 X-User-Role: WORKER
 ```
 
-Body:（raw-JSON)
+Body:(raw-JSON)
 
 ```json
 {
