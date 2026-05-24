@@ -23,6 +23,16 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`)
 );
 
+-- 种子用户数据
+INSERT INTO `user` (`id`, `name`, `role`) VALUES
+(1001, 'Leader-张三', 'LEADER'),
+(1002, 'Leader-李四', 'LEADER'),
+(2001, 'Worker-王五', 'WORKER'),
+(2002, 'Worker-赵六', 'WORKER'),
+(2003, 'Worker-钱七', 'WORKER'),
+(2004, 'Worker-孙八', 'WORKER'),
+(2005, 'Worker-周九', 'WORKER');
+
 -- 任务-候选工作者关联表
 CREATE TABLE `task_candidate_worker` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,       -- 关联ID
