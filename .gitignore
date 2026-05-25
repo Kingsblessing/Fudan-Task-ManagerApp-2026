@@ -36,6 +36,7 @@ build/
 /README_AI.md
 /CLAUDE.md
 /TaskManager.md
+.claude/
 
 ### start.bat ###
 /start_MySQL.bat
