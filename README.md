@@ -66,21 +66,21 @@ task-manager
 ```
 task-manager/frontend/
 ├── index.html
-├── vite.config.js          # Vite 配置（含 /api 代理）
+├── vite.config.js           // Vite 配置（含 /api 代理）
 ├── package.json
 └── src/
-    ├── main.js              # 入口：挂载 ElementPlus + Router
-    ├── App.vue              # 根组件，仅 <router-view />
-    ├── style.css            # 全局样式（极简）
+    ├── main.js              // 入口：挂载 ElementPlus + Router
+    ├── App.vue              // 根组件，仅 <router-view />
+    ├── style.css            // 全局样式（极简）
     ├── api/
-    │   └── index.js         # Axios 实例 + 请求/响应拦截器 + 全部 API 函数
+    │   └── index.js         // Axios 实例 + 请求/响应拦截器 + 全部 API 函数
     ├── router/
-    │   └── index.js         # 路由配置 + beforeEnter 守卫
+    │   └── index.js         // 路由配置 + beforeEnter 守卫
     └── pages/
-        ├── LoginPage.vue    # 登录页
-        ├── LeaderPage.vue   # Leader 管理面板（任务列表 + Worker 列表）
-        ├── WorkerPage.vue   # Worker 工作台（可认领/进行中/我的任务）
-        └── TaskDetailPage.vue # 任务详情页
+        ├── LoginPage.vue    // 登录页
+        ├── LeaderPage.vue   // Leader 管理面板（任务列表 + Worker 列表）
+        ├── WorkerPage.vue   // Worker 工作台（可认领/进行中/我的任务）
+        └── TaskDetailPage.vue // 任务详情页
 ```
 
 ## 三、API 设计
@@ -198,7 +198,7 @@ api.interceptors.response.use((res) => {
 
 ## 六、页面与交互设计
 
-### 4.1 登录页面 (`/login`)
+### 6.1 登录页面 (`/login`)
 
 **布局**：居中卡片式表单，渐变背景。
 
@@ -214,9 +214,9 @@ api.interceptors.response.use((res) => {
 - 登录失败时，响应拦截器自动弹出错误提示（如"用户角色不匹配"）
 - 登录成功后根据角色自动跳转到 `/leader` 或 `/worker`
 
-![image-20260525101043705](demo-pictures\image-20260525101043705.png)
+![image-20260525101043705](demo-pictures/image-20260525101043705.png)
 
-### 4.2 Leader 页面 (`/leader`)
+### 6.2 Leader 页面 (`/leader`)
 
 **布局**：顶栏 + 左侧菜单 + 右侧内容区（经典后台管理布局）。
 
@@ -235,9 +235,9 @@ api.interceptors.response.use((res) => {
 - 点击行任意位置跳转到任务详情页
 - 空列表显示"暂无任务"占位
 
-![image-20260525101112470](demo-pictures\image-20260525101112470.png)
+![image-20260525101112470](demo-pictures/image-20260525101112470.png)
 
-![image-20260525101235684](demo-pictures\image-20260525101235684.png)
+![image-20260525101235684](demo-pictures/image-20260525101235684.png)
 
 **新建任务**：
 
@@ -245,15 +245,15 @@ api.interceptors.response.use((res) => {
 - 填写标题（文本输入）、描述（多行文本）、候选 Worker（多选下拉，选项来自 Worker 列表）
 - 创建成功后自动刷新任务列表
 
-![image-20260525101155286](demo-pictures\image-20260525101155286.png)
+![image-20260525101155286](demo-pictures/image-20260525101155286.png)
 
 **Worker 列表**：
 
 - 表格列：Worker ID、姓名、被指派任务数、进行中任务数、已完成任务数
 
-![image-20260525101249220](demo-pictures\image-20260525101249220.png)
+![image-20260525101249220](demo-pictures/image-20260525101249220.png)
 
-### 4.3 Worker 页面 (`/worker`)
+### 6.3 Worker 页面 (`/worker`)
 
 **布局**：与 Leader 一致（顶栏 + 左侧菜单 + 内容区），顶栏颜色区分角色。
 
@@ -268,7 +268,7 @@ api.interceptors.response.use((res) => {
 - 可认领列表：「认领」按钮
 - 进行中列表：「完成」按钮 + 「错误暂停」按钮
 
-![image-20260525101319752](demo-pictures\image-20260525101319752.png)
+![image-20260525101319752](demo-pictures/image-20260525101319752.png)
 
 **错误暂停交互**：
 
@@ -276,9 +276,9 @@ api.interceptors.response.use((res) => {
 - 必须填写错误原因（多行文本）
 - 提交后调用 `POST /api/worker/tasks/{id}/error-pause`
 
-![image-20260525101351197](demo-pictures\image-20260525101351197.png)
+![image-20260525101351197](demo-pictures/image-20260525101351197.png)
 
-### 4.4 任务详情页 (`/task/:id`)
+### 6.4 任务详情页 (`/task/:id`)
 
 **布局**：顶栏（含返回按钮）+ 居中卡片。
 
@@ -296,7 +296,7 @@ api.interceptors.response.use((res) => {
 - Leader 可查看任意任务
 - Worker 只能查看自己在候选列表中或已认领的任务（后端权限校验）
 
-![image-20260525101559349](demo-pictures\image-20260525101559349.png)
+![image-20260525101559349](demo-pictures/image-20260525101559349.png)
 
 ## 七、路由与鉴权
 
@@ -318,7 +318,7 @@ routes: [
 
 ## 八、运行说明
 
-### 6.1 环境要求
+### 8.1 环境要求
 
 | 依赖    | 版本要求                       |
 | ------- | ------------------------------ |
@@ -327,7 +327,7 @@ routes: [
 | npm     | 9+                             |
 | MySQL   | 8.0+（仅使用数据库存储时需要） |
 
-### 6.2 启动步骤
+### 8.2 启动步骤
 
 **1.克隆代码并进入项目根目录。**
 
@@ -371,7 +371,7 @@ npm run dev
 
 前端启动后访问 `http://localhost:5173`。
 
-### 6.3 测试账号
+### 8.3 测试账号
 
 | 用户 ID | 角色   | 姓名        |
 | ------- | ------ | ----------- |
