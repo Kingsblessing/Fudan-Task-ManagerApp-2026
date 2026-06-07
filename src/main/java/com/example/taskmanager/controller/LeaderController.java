@@ -1,5 +1,6 @@
 package com.example.taskmanager.controller;
 
+import com.example.taskmanager.aop.annotation.DebugLog;
 import com.example.taskmanager.common.Result;
 import com.example.taskmanager.service.TaskService;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ public class LeaderController {
      * POST /api/leader/task
      */
     @PostMapping("/task")
+    @DebugLog
     public Result<?> createTask(@RequestBody Map<String, Object> req) {
         String title = (String) req.get("title");
         String description = (String) req.get("description");
@@ -38,6 +40,7 @@ public class LeaderController {
      * 查看全部任务（支持筛选）
      * GET /api/leader/tasks?status=&keyword=&workerId=
      */
+    @DebugLog
     @GetMapping("/tasks")
     public Result<?> getTasks(
             @RequestParam(required = false) String status,
@@ -68,6 +71,7 @@ public class LeaderController {
      * 查看Worker列表
      * GET /api/leader/workers
      */
+    @DebugLog
     @GetMapping("/workers")
     public Result<?> getWorkers() {
         return Result.success(taskService.getWorkerList());

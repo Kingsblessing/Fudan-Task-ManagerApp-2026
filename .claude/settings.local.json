@@ -4,7 +4,8 @@
       "Bash(./mvnw compile *)",
       "Read(//c/Program Files/Java//**)",
       "Read(//c/Program Files \\(x86\\)/**)",
-      "Read(//d/FudanCoding//**)"
+      "Read(//d/FudanCoding//**)",
+      "Bash(git stash *)"
     ]
   }
 }

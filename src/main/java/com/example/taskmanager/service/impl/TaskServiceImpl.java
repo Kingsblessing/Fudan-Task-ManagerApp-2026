@@ -1,5 +1,6 @@
 package com.example.taskmanager.service.impl;
 
+import com.example.taskmanager.aop.annotation.DebugLog;
 import com.example.taskmanager.common.ResultCode;
 import com.example.taskmanager.common.UserContext;
 import com.example.taskmanager.entity.Role;
@@ -30,6 +31,7 @@ public class TaskServiceImpl implements TaskService {
 
     // ==================== Leader ====================
 
+    @DebugLog
     @Override
     public Task createTask(String title, String description, List<Long> candidateWorkerIds) {
         if (candidateWorkerIds == null || candidateWorkerIds.isEmpty()) {
@@ -139,6 +141,7 @@ public class TaskServiceImpl implements TaskService {
         };
     }
 
+    @DebugLog
     @Override
     public Task claimTask(Long taskId) {
         Task task = getTaskById(taskId);
@@ -160,6 +163,7 @@ public class TaskServiceImpl implements TaskService {
         return task;
     }
 
+    @DebugLog
     @Override
     public Task finishTask(Long taskId) {
         Task task = getTaskById(taskId);
@@ -190,6 +194,7 @@ public class TaskServiceImpl implements TaskService {
 
     // ==================== Common ====================
 
+    @DebugLog
     @Override
     public Task getTaskDetail(Long taskId) {
         Task task = getTaskById(taskId);
