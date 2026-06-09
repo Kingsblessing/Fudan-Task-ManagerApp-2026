@@ -13,7 +13,7 @@
 
 **后端技术栈**：Java, Spring Boot, Spring JDBC, MySQL/H2, Lombok, Postman
 
-**前端技术栈**：Vue 3, Vite, Vue Router 4, Axios, Element Plus
+**前端技术栈**：Vue 3, Vite, Vue Router 4, Axios, Element Plus, Tailwind CSS 3
 
 ## 二、项目结构
 
@@ -402,7 +402,7 @@ api.interceptors.response.use((res) => {
 - **平板端** — 自适应网格布局
 - **移动端** — 单列布局，侧边栏隐藏
 
-![image-20260609161610163](C:\Users\23954\AppData\Roaming\Typora\typora-user-images\image-20260609161610163.png)
+![image-20260609161610163](demo-pictures/image-20260609161610163.png)
 
 #### 后端连接
 
