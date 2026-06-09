@@ -25,8 +25,8 @@ public class LeaderController {
      * 创建任务
      * POST /api/leader/task
      */
-    @PostMapping("/task")
     @DebugLog
+    @PostMapping("/task")
     public Result<?> createTask(@RequestBody Map<String, Object> req) {
         String title = (String) req.get("title");
         String description = (String) req.get("description");
@@ -53,6 +53,7 @@ public class LeaderController {
      * 暂停任务
      * POST /api/leader/tasks/{taskId}/pause
      */
+    @DebugLog
     @PostMapping("/tasks/{taskId}/pause")
     public Result<?> pauseTask(@PathVariable Long taskId) {
         return Result.success(taskService.pauseTask(taskId));
@@ -62,6 +63,7 @@ public class LeaderController {
      * 恢复任务
      * POST /api/leader/tasks/{taskId}/resume
      */
+    @DebugLog
     @PostMapping("/tasks/{taskId}/resume")
     public Result<?> resumeTask(@PathVariable Long taskId) {
         return Result.success(taskService.resumeTask(taskId));

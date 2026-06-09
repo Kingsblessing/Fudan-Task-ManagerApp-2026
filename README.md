@@ -61,10 +61,10 @@ task-manager
 └── pom.xml                               // 项目依赖配置
 ```
 
-### 2.2 前端结构
+### 2.2 原版前端结构
 
 ```
-task-manager/frontend/
+frontend/
 ├── index.html
 ├── vite.config.js           // Vite 配置（含 /api 代理）
 ├── package.json
@@ -81,6 +81,38 @@ task-manager/frontend/
         ├── LeaderPage.vue   // Leader 管理面板（任务列表 + Worker 列表）
         ├── WorkerPage.vue   // Worker 工作台（可认领/进行中/我的任务）
         └── TaskDetailPage.vue // 任务详情页
+```
+
+### 2.3 新版前端架构
+
+```
+newfrontend/
+├── index.html                 # 入口 HTML
+├── package.json               # 依赖配置
+├── vite.config.js             # Vite 配置（含 API 代理）
+├── tailwind.config.js         # Tailwind 配置（自定义主题）
+├── postcss.config.js          # PostCSS 配置
+└── src/
+    ├── main.js                # 应用入口
+    ├── App.vue                # 根组件（含主题/视图切换器）
+    ├── api/
+    │   └── index.js           # Axios 实例 + API 函数
+    ├── router/
+    │   └── index.js           # 路由配置 + 鉴权守卫
+    ├── composables/
+    │   ├── useTheme.js        # 主题 + 视图模式管理
+    │   ├── useToast.js        # Toast 通知系统
+    │   └── useStatus.js       # 任务状态工具函数
+    ├── components/
+    │   └── ToastContainer.vue # Toast 容器组件
+    ├── pages/
+    │   ├── LoginPage.vue      # 登录页
+    │   ├── LeaderPage.vue     # Leader 管理面板
+    │   ├── WorkerPage.vue     # Worker 工作台
+    │   └── TaskDetailPage.vue # 任务详情页
+    └── assets/
+        └── styles/
+            └── main.css       # 全局样式 + CSS 变量
 ```
 
 ## 三、API 设计
@@ -196,7 +228,7 @@ api.interceptors.response.use((res) => {
 - 页面刷新后 Axios 拦截器从 `localStorage` 读取身份，自动附带到每次请求
 - 退出登录时清除 `localStorage` 并跳转回登录页
 
-## 六、页面与交互设计
+## 六、旧版页面与交互设计
 
 ### 6.1 登录页面 (`/login`)
 
@@ -298,7 +330,85 @@ api.interceptors.response.use((res) => {
 
 ![image-20260525101559349](demo-pictures/image-20260525101559349.png)
 
-## 七、路由与鉴权
+## 七、新版页面与交互设计
+
+### 7.1 新版前端界面差异
+
+#### 控制按钮
+
+右下角有两个浮动按钮：
+
+#### 主题切换
+
+点击循环切换：自动 → 浅色 → 深色
+
+- **自动** — 跟随系统主题，显示当前实际应用的主题
+- **浅色** — 强制浅色模式
+- **深色** — 强制深色模式
+
+#### 视图切换
+
+点击在列表/卡片视图间切换：
+
+- **列表** — 表格形式展示数据
+- **卡片** — 卡片形式展示数据
+
+### 7.2 新版前端功能特性
+
+#### 登录页
+
+- 用户 ID 输入 + 角色选择
+- 测试账号快速登录
+- 响应式布局，移动端友好
+
+![image-20260609161159348](demo-pictures/image-20260609161159348.png)
+
+![image-20260609161254436](demo-pictures/image-20260609161254436.png)
+
+#### Leader 管理面板
+
+- 任务列表（列表/卡片视图）
+- 任务筛选（状态、关键词）
+- 创建任务（标题、描述、候选 Worker）
+- 暂停/恢复任务
+- Worker 列表查看
+
+![image-20260609161338177](demo-pictures/image-20260609161338177.png)
+
+
+
+#### Worker 工作台
+
+- 可认领任务列表
+- 进行中任务列表
+- 我的任务列表
+- 认领、完成、错误暂停操作
+
+![image-20260609161522936](demo-pictures/image-20260609161522936.png)
+
+#### 任务详情页
+
+- 完整任务信息展示
+- 状态标签、时间格式化
+- 错误信息高亮显示
+
+![image-20260609161433040](demo-pictures/image-20260609161433040.png)
+
+#### 响应式设计
+
+所有页面均支持：
+
+- **桌面端** — 完整侧边栏 + 内容区布局
+- **平板端** — 自适应网格布局
+- **移动端** — 单列布局，侧边栏隐藏
+
+![image-20260609161610163](C:\Users\23954\AppData\Roaming\Typora\typora-user-images\image-20260609161610163.png)
+
+#### 后端连接
+
+默认代理到 `http://localhost:8080`，需要后端服务运行。
+
+## 八、路由与鉴权
 
 ```js
 routes: [
@@ -316,9 +426,9 @@ routes: [
 2. 需要认证但未登录 → 跳转 `/login`
 3. 已登录但角色不匹配 → 跳转到对应角色的首页
 
-## 八、运行说明
+## 九、运行说明
 
-### 8.1 环境要求
+### 9.1 环境要求
 
 | 依赖    | 版本要求                       |
 | ------- | ------------------------------ |
@@ -327,7 +437,7 @@ routes: [
 | npm     | 9+                             |
 | MySQL   | 8.0+（仅使用数据库存储时需要） |
 
-### 8.2 启动步骤
+### 9.2 启动步骤
 
 **1.克隆代码并进入项目根目录。**
 
@@ -357,7 +467,7 @@ cd task-manager
 
 后端启动后监听 `http://localhost:8080`。
 
-**4.启动前端**
+**4.启动旧版前端**
 
 ```bash
 cd task-manager/frontend
@@ -367,11 +477,31 @@ npm install
 
 # 启动开发服务器
 npm run dev
+
+# 构建生产版本
+npm run build
 ```
 
 前端启动后访问 `http://localhost:5173`。
 
-### 8.3 测试账号
+**5.启动新版前端**
+
+```bash
+cd task-manager/newfrontend
+
+# 安装依赖（首次）
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+```
+
+前端启动后访问 `http://localhost:5174`。
+
+### 9.3 测试账号
 
 | 用户 ID | 角色   | 姓名        |
 | ------- | ------ | ----------- |

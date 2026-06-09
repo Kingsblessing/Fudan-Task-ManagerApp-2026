@@ -14,3 +14,4 @@ public interface UserRepository {
     List<User> findAll();
     List<User> findByRole(Role role);
 }
+

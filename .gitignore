@@ -33,10 +33,12 @@ build/
 .vscode/
 
 ### Claude ###
-/README_AI.md
-/CLAUDE.md
-/TaskManager.md
+README_AI.md
+CLAUDE.md
+TaskManager.md
+Newfrontend.md
+AOP-Requirement.md
 .claude/
 
 ### start.bat ###
-/start_MySQL.bat
+start_MySQL.bat

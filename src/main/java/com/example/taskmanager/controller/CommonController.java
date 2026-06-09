@@ -22,6 +22,7 @@ public class CommonController {
      * 查看任务详情
      * GET /api/tasks/{taskId}
      */
+    @DebugLog
     @GetMapping("/tasks/{taskId}")
     public Result<?> getTaskDetail(@PathVariable Long taskId) {
         return Result.success(taskService.getTaskDetail(taskId));
