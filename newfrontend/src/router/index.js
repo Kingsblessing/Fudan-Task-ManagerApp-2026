@@ -42,4 +42,19 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+/**
+ * 登出：调用后端接口注销 Token，清除本地存储
+ */
+export async function doLogout() {
+  try {
+    const { logout } = await import('../api')
+    await logout()
+  } catch (e) {
+    // 即使后端调用失败也清除本地状态
+  }
+  localStorage.removeItem('user')
+  localStorage.removeItem('uid')
+  router.push('/login')
+}
+
 export default router

@@ -11,6 +11,8 @@ import com.example.taskmanager.exception.BusinessException;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.repository.UserRepository;
 import com.example.taskmanager.service.TaskService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TaskServiceImpl implements TaskService {
+    private static final Logger log = LoggerFactory.getLogger(TaskServiceImpl.class);
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
@@ -46,17 +49,22 @@ public class TaskServiceImpl implements TaskService {
         task.setCreatorId(UserContext.getUserId());
         task.setCandidateWorkerIds(candidateWorkerIds);
         task.setStatus(TaskStatus.PENDING);
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        log.info("任务创建成功: taskId={}, title={}, creatorId={}", saved.getId(), title, UserContext.getUserId());
+        return saved;
     }
 
     @Override
     public Task pauseTask(Long taskId) {
         Task task = getTaskById(taskId);
         if (task.getStatus() != TaskStatus.PENDING && task.getStatus() != TaskStatus.IN_PROGRESS) {
+            log.warn("非法状态流转: taskId={}, 当前状态={}, 操作=pause", taskId, task.getStatus());
             throw new BusinessException(ResultCode.STATUS_INVALID.code, "仅待执行/执行中的任务可暂停");
         }
+        TaskStatus oldStatus = task.getStatus();
         task.setStatus(TaskStatus.PAUSED);
         updateWithLocking(task);
+        log.info("任务状态变更: taskId={}, {} -> PAUSED", taskId, oldStatus);
         return task;
     }
 
@@ -64,17 +72,21 @@ public class TaskServiceImpl implements TaskService {
     public Task resumeTask(Long taskId) {
         Task task = getTaskById(taskId);
         if (task.getStatus() != TaskStatus.PAUSED && task.getStatus() != TaskStatus.ERROR_PAUSED) {
+            log.warn("非法状态流转: taskId={}, 当前状态={}, 操作=resume", taskId, task.getStatus());
             throw new BusinessException(ResultCode.STATUS_INVALID.code, "仅暂停/错误暂停状态的任务可恢复");
         }
+        TaskStatus oldStatus = task.getStatus();
         task.setStatus(TaskStatus.PENDING);
         task.setAssigneeId(null);
         task.setErrorMessage(null);
         updateWithLocking(task);
+        log.info("任务状态变更: taskId={}, {} -> PENDING", taskId, oldStatus);
         return task;
     }
 
     @Override
     public List<Task> getLeaderTaskList(String status, String keyword, Long workerId) {
+        log.debug("查询任务列表: status={}, keyword={}, workerId={}", status, keyword, workerId);
         List<Task> tasks = taskRepository.findAll();
         return tasks.stream()
                 .filter(t -> status == null || status.isBlank() || t.getStatus().name().equalsIgnoreCase(status))
@@ -90,7 +102,6 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<Map<String, Object>> getWorkerList() {
         List<Task> allTasks = taskRepository.findAll();
-        // 按 assigneeId 分组统计
         Map<Long, List<Task>> assigneeMap = allTasks.stream()
                 .filter(t -> t.getAssigneeId() != null)
                 .collect(Collectors.groupingBy(Task::getAssigneeId));
@@ -101,7 +112,6 @@ public class TaskServiceImpl implements TaskService {
             Map<String, Object> info = new LinkedHashMap<>();
             info.put("workerId", w.getId());
             info.put("workerName", w.getName());
-            // 被指派任务数：在候选列表中的任务总数
             long assigned = allTasks.stream()
                     .filter(t -> t.getCandidateWorkerIds() != null && t.getCandidateWorkerIds().contains(w.getId()))
                     .count();
@@ -148,18 +158,22 @@ public class TaskServiceImpl implements TaskService {
         Long currentUserId = UserContext.getUserId();
 
         if (task.getStatus() != TaskStatus.PENDING) {
+            log.warn("非法状态流转: taskId={}, 当前状态={}, 操作=claim", taskId, task.getStatus());
             throw new BusinessException(ResultCode.STATUS_INVALID.code, "任务非待执行状态");
         }
         if (task.getCandidateWorkerIds() == null || !task.getCandidateWorkerIds().contains(currentUserId)) {
+            log.warn("权限不足: userId={}, 操作=claim, taskId={}", currentUserId, taskId);
             throw new BusinessException(ResultCode.UNAUTHORIZED.code, "你不是该任务的候选执行人");
         }
         if (task.getAssigneeId() != null) {
+            log.warn("任务认领冲突: taskId={}, 已被 {} 认领", taskId, task.getAssigneeId());
             throw new BusinessException(ResultCode.STATUS_CONFLICT.code, "任务已被认领");
         }
 
         task.setStatus(TaskStatus.IN_PROGRESS);
         task.setAssigneeId(currentUserId);
         updateWithLocking(task);
+        log.info("任务认领成功: taskId={}, workerId={}", taskId, currentUserId);
         return task;
     }
 
@@ -169,10 +183,12 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskById(taskId);
         verifyWorkerOwnership(task);
         if (task.getStatus() != TaskStatus.IN_PROGRESS) {
+            log.warn("非法状态流转: taskId={}, 当前状态={}, 操作=finish", taskId, task.getStatus());
             throw new BusinessException(ResultCode.STATUS_INVALID.code, "仅执行中的任务可完成");
         }
         task.setStatus(TaskStatus.COMPLETED);
         updateWithLocking(task);
+        log.info("任务完成: taskId={}, workerId={}", taskId, UserContext.getUserId());
         return task;
     }
 
@@ -181,6 +197,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskById(taskId);
         verifyWorkerOwnership(task);
         if (task.getStatus() != TaskStatus.IN_PROGRESS) {
+            log.warn("非法状态流转: taskId={}, 当前状态={}, 操作=error-pause", taskId, task.getStatus());
             throw new BusinessException(ResultCode.STATUS_INVALID.code, "仅执行中的任务可上报错误");
         }
         if (errorMessage == null || errorMessage.isBlank()) {
@@ -189,6 +206,7 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(TaskStatus.ERROR_PAUSED);
         task.setErrorMessage(errorMessage);
         updateWithLocking(task);
+        log.warn("任务错误暂停: taskId={}, workerId={}, error={}", taskId, UserContext.getUserId(), errorMessage);
         return task;
     }
 
@@ -204,10 +222,10 @@ public class TaskServiceImpl implements TaskService {
         if ("LEADER".equals(role)) {
             return task;
         }
-        // Worker: 至少可查看自己在候选列表中或已认领的任务
         boolean isCandidate = task.getCandidateWorkerIds() != null && task.getCandidateWorkerIds().contains(currentUserId);
         boolean isAssignee = currentUserId.equals(task.getAssigneeId());
         if (!isCandidate && !isAssignee) {
+            log.warn("权限不足: userId={}, 操作=getTaskDetail, taskId={}", currentUserId, taskId);
             throw new BusinessException(ResultCode.UNAUTHORIZED.code, "无权查看该任务");
         }
         return task;
@@ -217,6 +235,7 @@ public class TaskServiceImpl implements TaskService {
 
     private void verifyWorkerOwnership(Task task) {
         if (!UserContext.getUserId().equals(task.getAssigneeId())) {
+            log.warn("权限不足: userId={}, 操作=verifyOwnership, taskId={}", UserContext.getUserId(), task.getId());
             throw new BusinessException(ResultCode.UNAUTHORIZED.code, "你不是该任务的执行人");
         }
     }
@@ -224,6 +243,7 @@ public class TaskServiceImpl implements TaskService {
     private void updateWithLocking(Task task) {
         int rows = taskRepository.update(task);
         if (rows == 0) {
+            log.warn("乐观锁冲突: taskId={}, version={}", task.getId(), task.getVersion());
             throw new BusinessException(ResultCode.STATUS_CONFLICT.code, "任务状态已被其他用户修改，请刷新后重试");
         }
     }

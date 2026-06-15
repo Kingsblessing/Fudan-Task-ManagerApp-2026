@@ -7,7 +7,13 @@ storage:
 
 # AOP切面模式：debug开启切面日志，normal关闭
 aop:
-  mode: debug
+  mode: normal
+
+# JWT 配置
+jwt:
+  secret: "TaskManagerSecretKey2026ForJWTTokenSigningMustBe256Bits"
+  access-expiration: 900000     # 15分钟（毫秒）
+  refresh-expiration: 604800000 # 7天（毫秒）
 
 spring:
   datasource: # 数据库连接配置

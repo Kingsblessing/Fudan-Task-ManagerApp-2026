@@ -2,7 +2,10 @@ package com.example.taskmanager.controller;
 
 import com.example.taskmanager.aop.annotation.DebugLog;
 import com.example.taskmanager.common.Result;
+import com.example.taskmanager.common.UserContext;
 import com.example.taskmanager.service.TaskService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.Map;
 @RequestMapping("/api/leader")
 public class LeaderController {
 
+    private static final Logger log = LoggerFactory.getLogger(LeaderController.class);
     private final TaskService taskService;
 
     public LeaderController(TaskService taskService) {
@@ -33,6 +37,7 @@ public class LeaderController {
         @SuppressWarnings("unchecked")
         List<Number> rawIds = (List<Number>) req.get("candidateWorkerIds");
         List<Long> workerIds = rawIds.stream().map(Number::longValue).toList();
+        log.info("创建任务请求: title={}, candidateWorkerIds={}", title, workerIds);
         return Result.success(taskService.createTask(title, description, workerIds));
     }
 
@@ -46,6 +51,7 @@ public class LeaderController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long workerId) {
+        log.debug("查询任务列表: status={}, keyword={}, workerId={}", status, keyword, workerId);
         return Result.success(taskService.getLeaderTaskList(status, keyword, workerId));
     }
 
@@ -56,6 +62,7 @@ public class LeaderController {
     @DebugLog
     @PostMapping("/tasks/{taskId}/pause")
     public Result<?> pauseTask(@PathVariable Long taskId) {
+        log.info("暂停任务: taskId={}, leaderId={}", taskId, UserContext.getUserId());
         return Result.success(taskService.pauseTask(taskId));
     }
 
@@ -66,6 +73,7 @@ public class LeaderController {
     @DebugLog
     @PostMapping("/tasks/{taskId}/resume")
     public Result<?> resumeTask(@PathVariable Long taskId) {
+        log.info("恢复任务: taskId={}, leaderId={}", taskId, UserContext.getUserId());
         return Result.success(taskService.resumeTask(taskId));
     }
 
@@ -76,6 +84,7 @@ public class LeaderController {
     @DebugLog
     @GetMapping("/workers")
     public Result<?> getWorkers() {
+        log.debug("查询 Worker 列表");
         return Result.success(taskService.getWorkerList());
     }
 }

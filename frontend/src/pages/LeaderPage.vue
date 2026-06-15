@@ -192,8 +192,13 @@ const goDetail = (row) => {
   router.push(`/task/${row.id}`)
 }
 
-const logout = () => {
+const logout = async () => {
+  try {
+    const { logout: apiLogout } = await import('../api')
+    await apiLogout()
+  } catch (e) { /* 即使失败也清除本地状态 */ }
   localStorage.removeItem('user')
+  localStorage.removeItem('uid')
   router.push('/login')
 }
 

@@ -19,6 +19,16 @@
           />
         </el-form-item>
 
+        <el-form-item label="密码">
+          <el-input
+            v-model="form.password"
+            type="password"
+            placeholder="输入密码"
+            show-password
+            style="width: 100%"
+          />
+        </el-form-item>
+
         <el-form-item label="用户角色">
           <el-radio-group v-model="form.role">
             <el-radio-button value="LEADER">LEADER</el-radio-button>
@@ -66,7 +76,7 @@ import { login } from '../api'
 
 const router = useRouter()
 const loading = ref(false)
-const form = ref({ userId: null, role: 'LEADER' })
+const form = ref({ userId: null, password: '', role: 'LEADER' })
 
 const testAccounts = [
   { id: 1001, role: 'LEADER' },
@@ -81,6 +91,7 @@ const testAccounts = [
 const quickLogin = (account) => {
   form.value.userId = account.id
   form.value.role = account.role
+  form.value.password = 'password123'
 }
 
 const handleLogin = async () => {
@@ -88,10 +99,16 @@ const handleLogin = async () => {
     ElMessage.warning('请输入用户 ID')
     return
   }
+  if (!form.value.password) {
+    ElMessage.warning('请输入密码')
+    return
+  }
   loading.value = true
   try {
-    await login({ userId: form.value.userId, role: form.value.role })
-    localStorage.setItem('user', JSON.stringify(form.value))
+    const res = await login({ userId: form.value.userId, password: form.value.password, role: form.value.role })
+    // Token 通过 httpOnly Cookie 下发，前端仅存储用户展示信息
+    localStorage.setItem('user', JSON.stringify({ userId: res.data.userId, role: res.data.role, name: res.data.name }))
+    localStorage.setItem('uid', String(res.data.userId))
     ElMessage.success('登录成功')
     router.push(form.value.role === 'LEADER' ? '/leader' : '/worker')
   } catch (e) {

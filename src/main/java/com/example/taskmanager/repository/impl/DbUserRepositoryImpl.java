@@ -49,6 +49,7 @@ public class DbUserRepositoryImpl implements UserRepository {
         user.setId(rs.getLong("id"));
         user.setName(rs.getString("name"));
         user.setRole(Role.valueOf(rs.getString("role")));
+        user.setPassword(rs.getString("password"));
         Timestamp created = rs.getTimestamp("created_at");
         if (created != null) user.setCreatedAt(created.toLocalDateTime());
         Timestamp updated = rs.getTimestamp("updated_at");

@@ -57,6 +57,26 @@
               </div>
             </div>
 
+            <!-- Password Input -->
+            <div class="form-group">
+              <label class="form-label">密码</label>
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input
+                  v-model="form.password"
+                  type="password"
+                  placeholder="输入密码"
+                  class="form-input"
+                  required
+                />
+              </div>
+            </div>
+
             <!-- Role Selection -->
             <div class="form-group">
               <label class="form-label">选择角色</label>
@@ -128,7 +148,7 @@ const router = useRouter()
 const { isDark } = useTheme()
 const toast = useToast()
 const loading = ref(false)
-const form = reactive({ userId: null, role: 'LEADER' })
+const form = reactive({ userId: null, password: '', role: 'LEADER' })
 
 const testAccounts = [
   { id: 1001, role: 'LEADER' },
@@ -143,6 +163,7 @@ const testAccounts = [
 const quickLogin = (account) => {
   form.userId = account.id
   form.role = account.role
+  form.password = 'password123'
 }
 
 const handleLogin = async () => {
@@ -150,16 +171,22 @@ const handleLogin = async () => {
     toast.warning('请输入用户 ID')
     return
   }
+  if (!form.password) {
+    toast.warning('请输入密码')
+    return
+  }
   loading.value = true
   try {
-    await login({ userId: form.userId, role: form.role })
-    localStorage.setItem('user', JSON.stringify({ userId: form.userId, role: form.role }))
+    const res = await login({ userId: form.userId, password: form.password, role: form.role })
+    // Token 通过 httpOnly Cookie 下发，前端仅存储用户展示信息
+    localStorage.setItem('user', JSON.stringify({ userId: res.data.userId, role: res.data.role, name: res.data.name }))
+    localStorage.setItem('uid', String(res.data.userId))
     toast.success('登录成功')
     setTimeout(() => {
       router.push(form.role === 'LEADER' ? '/leader' : '/worker')
     }, 500)
   } catch (e) {
-    toast.error(e.message || '登录失败，请检查用户 ID 和角色')
+    toast.error(e.message || '登录失败，请检查用户 ID 和密码')
   } finally {
     loading.value = false
   }

@@ -4,19 +4,23 @@ import { ElMessage } from 'element-plus'
 const api = axios.create({
   baseURL: '/api',
   timeout: 10000,
+  withCredentials: true, // 自动携带 httpOnly Cookie（Token 由后端通过 Cookie 下发）
 })
 
-// 请求拦截：自动注入用户身份
-api.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
-  if (user) {
-    config.headers['X-User-Id'] = user.userId
-    config.headers['X-User-Role'] = user.role
-  }
-  return config
-})
+// 是否正在刷新 Token
+let isRefreshing = false
+let refreshSubscribers = []
 
-// 响应拦截：统一处理业务错误
+function subscribeTokenRefresh(cb) {
+  refreshSubscribers.push(cb)
+}
+
+function onTokenRefreshed() {
+  refreshSubscribers.forEach(cb => cb())
+  refreshSubscribers = []
+}
+
+// 响应拦截：统一处理业务错误 + Token 静默刷新
 api.interceptors.response.use(
   (res) => {
     if (res.data.code !== 0) {
@@ -25,14 +29,44 @@ api.interceptors.response.use(
     }
     return res.data
   },
-  (err) => {
-    ElMessage.error(err.message || '网络错误')
-    return Promise.reject(err)
+  async (err) => {
+    const originalRequest = err.config
+
+    // 如果是 4005（权限不足/Token 失效）且未重试过，尝试刷新 Token
+    if (err.response?.data?.code === 4005 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh(() => resolve(api(originalRequest)))
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        await axios.post('/api/refresh', {}, { withCredentials: true })
+        isRefreshing = false
+        onTokenRefreshed()
+        return api(originalRequest)
+      } catch (refreshErr) {
+        isRefreshing = false
+        refreshSubscribers = []
+        localStorage.removeItem('user')
+        localStorage.removeItem('uid')
+        window.location.href = '/login'
+        return Promise.reject(refreshErr)
+      }
+    }
+
+    ElMessage.error(err.response?.data?.message || err.message || '网络错误')
+    return Promise.reject(err.response?.data || err)
   }
 )
 
 // ============ 登录 ============
 export const login = (data) => api.post('/login', data)
+export const logout = () => api.post('/logout')
+export const refreshToken = () => api.post('/refresh')
 
 // ============ Leader ============
 export const createTask = (data) => api.post('/leader/task', data)
